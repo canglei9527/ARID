@@ -56,7 +56,7 @@ $ws = Join-Path $stage 'workspace'
 New-Item -ItemType Directory -Force -Path $ws | Out-Null
 # Exact-name exclusions.
 $excludeExact = @('node_modules', 'dist', 'kb-installer', '.git', '.env',
-             'dinosaur.c', 'dinosaur.exe', 'dragon.png', 'dragon.svg',
+             '_gui_test', 'dinosaur.c', 'dinosaur.exe', 'dragon.png', 'dragon.svg',
              'draw-dragon.ps1', '%TEMP%', 'config-gui', 'scripts',
              $USAGE_NAME, $PACK_NAME, 'install.bat', 'configure.bat',
              'feishu-worker')
@@ -74,6 +74,9 @@ Get-ChildItem -LiteralPath $repo -Force | ForEach-Object {
   Copy-Item -LiteralPath $_.FullName -Destination $ws -Recurse -Force
 }
 Write-Host '[pack] workspace files copied.'
+# Post-clean: never ship credential baselines (may hold plaintext API keys).
+Remove-Item -LiteralPath (Join-Path $ws 'tools\dual-model-gui\defaults\credentials.default.yaml') -Force -ErrorAction SilentlyContinue
+Write-Host '[pack] credential baselines stripped from workspace copy.'
 
 # ---------------------------------------------------------------
 # 4) Preset files from the local agent-presets dir
